@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2196F3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Flight Sim">
+    <title>비행기 경로 시뮬레이터</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 지도 영역 -->
+        <div id="map" class="map-container"></div>
+
+        <!-- 창밖 화면 (비디오) -->
+        <div id="videoContainer" class="map-container" style="display: none;">
+            <video id="windowVideo" width="100%" height="100%" autoplay loop muted playsinline>
+                <source src="./flight video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <!-- 제어 패널 -->
+        <div class="control-panel">
+            <!-- 출발지 선택 -->
+            <div class="control-section">
+                <label for="departure">출발지</label>
+                <select id="departure">
+                    <option value="">도시를 선택하세요</option>
+                </select>
+            </div>
+
+            <!-- 목적지 선택 -->
+            <div class="control-section">
+                <label for="destination">목적지</label>
+                <select id="destination">
+                    <option value="">도시를 선택하세요</option>
+                </select>
+            </div>
+
+            <!-- 비행 정보 -->
+            <div class="flight-info">
+                <div class="info-item">
+                    <span class="info-label">거리:</span>
+                    <span class="info-value" id="distance">0 km</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">비행시간:</span>
+                    <span class="info-value" id="flightTime">0분</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">진행상황:</span>
+                    <span class="info-value" id="progress">0%</span>
+                </div>
+            </div>
+
+            <!-- 제어 버튼 -->
+            <div class="control-buttons">
+                <button id="startBtn" class="btn btn-primary">시작</button>
+                <button id="pauseBtn" class="btn btn-secondary" disabled>일시정지</button>
+                <button id="stopBtn" class="btn btn-danger" disabled>정지</button>
+                <button id="windowBtn" class="btn btn-info">🪟 창밖 화면</button>
+            </div>
+
+            <!-- 속도 조절 -->
+            <div class="control-section">
+                <label for="speed">재생 속도</label>
+                <div class="speed-controls">
+                    <button class="speed-btn" data-speed="0.5">0.5x</button>
+                    <button class="speed-btn active" data-speed="1">1x</button>
+                    <button class="speed-btn" data-speed="2">2x</button>
+                    <button class="speed-btn" data-speed="4">4x</button>
+                </div>
+            </div>
+
+            <!-- 사운드 제어 -->
+            <div class="control-section">
+                <label for="volume">소리</label>
+                <div class="sound-controls">
+                    <button id="soundToggle" class="sound-btn" title="소리 켜기/끄기">🔊</button>
+                    <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="50" title="볼륨 조절">
+                </div>
+            </div>
+
+            <!-- 진행률 바 -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application scripts -->
+    <script src="js/airports.js?v=9"></script>
+    <script src="js/flight-simulator.js?v=9"></script>
+    <script src="js/offline-map.js?v=9"></script>
+    <script src="js/audio.js?v=9"></script>
+    <script src="js/main.js?v=9"></script>
+
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed:', err));
+        }
+    </script>
+</body>
+</html>
