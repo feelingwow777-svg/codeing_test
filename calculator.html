@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>계산기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .calculator {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 24px;
+    width: 320px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  }
+
+  .display {
+    background: rgba(0,0,0,0.4);
+    border-radius: 16px;
+    padding: 20px 16px 12px;
+    margin-bottom: 20px;
+    text-align: right;
+    min-height: 90px;
+  }
+
+  .display .expression {
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+    min-height: 20px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .display .result {
+    color: #fff;
+    font-size: 42px;
+    font-weight: 300;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  button {
+    border: none;
+    border-radius: 14px;
+    font-size: 20px;
+    font-weight: 500;
+    height: 64px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    outline: none;
+  }
+
+  button:active { transform: scale(0.93); }
+
+  .btn-num {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+  }
+  .btn-num:hover { background: rgba(255,255,255,0.18); }
+
+  .btn-op {
+    background: rgba(100, 180, 255, 0.2);
+    color: #64b4ff;
+  }
+  .btn-op:hover { background: rgba(100, 180, 255, 0.35); }
+
+  .btn-eq {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(102,126,234,0.4);
+  }
+  .btn-eq:hover { box-shadow: 0 4px 28px rgba(102,126,234,0.6); }
+
+  .btn-clear {
+    background: rgba(255, 80, 80, 0.2);
+    color: #ff6b6b;
+  }
+  .btn-clear:hover { background: rgba(255, 80, 80, 0.35); }
+
+  .btn-zero { grid-column: span 2; }
+</style>
+</head>
+<body>
+<div class="calculator">
+  <div class="display">
+    <div class="expression" id="expression"></div>
+    <div class="result" id="result">0</div>
+  </div>
+  <div class="buttons">
+    <button class="btn-clear" onclick="clearAll()">AC</button>
+    <button class="btn-op"    onclick="toggleSign()">+/-</button>
+    <button class="btn-op"    onclick="percent()">%</button>
+    <button class="btn-op"    onclick="inputOp('÷')">÷</button>
+
+    <button class="btn-num"   onclick="inputNum('7')">7</button>
+    <button class="btn-num"   onclick="inputNum('8')">8</button>
+    <button class="btn-num"   onclick="inputNum('9')">9</button>
+    <button class="btn-op"    onclick="inputOp('×')">×</button>
+
+    <button class="btn-num"   onclick="inputNum('4')">4</button>
+    <button class="btn-num"   onclick="inputNum('5')">5</button>
+    <button class="btn-num"   onclick="inputNum('6')">6</button>
+    <button class="btn-op"    onclick="inputOp('−')">−</button>
+
+    <button class="btn-num"   onclick="inputNum('1')">1</button>
+    <button class="btn-num"   onclick="inputNum('2')">2</button>
+    <button class="btn-num"   onclick="inputNum('3')">3</button>
+    <button class="btn-op"    onclick="inputOp('+')">+</button>
+
+    <button class="btn-num btn-zero" onclick="inputNum('0')">0</button>
+    <button class="btn-num"   onclick="inputDot()">.</button>
+    <button class="btn-eq"    onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+  let current = '0', expression = '', operator = '', prev = '', justCalc = false;
+
+  const R = document.getElementById('result');
+  const E = document.getElementById('expression');
+
+  function update() {
+    R.textContent = current.length > 10
+      ? parseFloat(current).toExponential(4)
+      : current;
+    E.textContent = expression;
+  }
+
+  function inputNum(n) {
+    if (justCalc) { current = n; expression = ''; justCalc = false; }
+    else current = (current === '0') ? n : current + n;
+    update();
+  }
+
+  function inputDot() {
+    if (justCalc) { current = '0.'; justCalc = false; }
+    else if (!current.includes('.')) current += '.';
+    update();
+  }
+
+  function inputOp(op) {
+    justCalc = false;
+    if (operator && prev !== '') {
+      prev = String(compute(parseFloat(prev), parseFloat(current), operator));
+      current = prev;
+    } else {
+      prev = current;
+    }
+    operator = op;
+    expression = prev + ' ' + op;
+    current = '0';
+    update();
+  }
+
+  function compute(a, b, op) {
+    if (op === '+') return a + b;
+    if (op === '−') return a - b;
+    if (op === '×') return a * b;
+    if (op === '÷') return b !== 0 ? a / b : 'Error';
+    return b;
+  }
+
+  function calculate() {
+    if (!operator || prev === '') return;
+    const res = compute(parseFloat(prev), parseFloat(current), operator);
+    expression = prev + ' ' + operator + ' ' + current + ' =';
+    current = String(parseFloat(res.toFixed(10)));
+    operator = ''; prev = ''; justCalc = true;
+    update();
+  }
+
+  function clearAll() {
+    current = '0'; expression = ''; operator = ''; prev = ''; justCalc = false;
+    update();
+  }
+
+  function toggleSign() {
+    current = String(parseFloat(current) * -1);
+    update();
+  }
+
+  function percent() {
+    current = String(parseFloat(current) / 100);
+    update();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') inputNum(e.key);
+    else if (e.key === '.') inputDot();
+    else if (e.key === '+') inputOp('+');
+    else if (e.key === '-') inputOp('−');
+    else if (e.key === '*') inputOp('×');
+    else if (e.key === '/') { e.preventDefault(); inputOp('÷'); }
+    else if (e.key === 'Enter' || e.key === '=') calculate();
+    else if (e.key === 'Escape') clearAll();
+    else if (e.key === 'Backspace') {
+      current = current.length > 1 ? current.slice(0, -1) : '0';
+      update();
+    }
+  });
+</script>
+</body>
+</html>
